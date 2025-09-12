@@ -3,285 +3,228 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🟩 Quadrilateral Area Game</title>
+<title>📐 Trigonometry Game</title>
 <style>
   body {
     font-family: 'Comic Sans MS', cursive, sans-serif;
     margin: 0; padding: 0;
-    background: linear-gradient(135deg, #84fab0, #8fd3f4);
-    display: flex; flex-direction: column; align-items: center;
-    min-height: 100vh;
+    background: linear-gradient(135deg, #f0f9ff, #cbebff);
+    text-align: center;
   }
-  h1 { margin-top: 20px; color: #fff; text-shadow: 2px 2px 5px #00897b; }
-  .tabs { margin-top: 15px; }
-  .tab-btn {
-    padding: 10px 20px; margin: 3px;
-    font-size: 16px; border: none;
-    border-radius: 10px; cursor: pointer;
-    background: #4db6ac; color: white; font-weight: bold;
+  h1 {
+    background: #2196f3;
+    color: white;
+    padding: 15px;
+    margin: 0;
   }
-  .tab-btn.active { background: #00897b; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
-  .game-card {
-    background: rgba(255,255,255,0.95);
-    padding: 30px; border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    text-align: center; margin-top: 20px;
-    position: relative; overflow: hidden;
+  #game-container {
+    margin: 20px auto;
+    width: 90%;
+    max-width: 650px;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    position: relative;
+    overflow: hidden;
   }
-  canvas { margin: 20px 0; border-radius: 15px; border: 2px solid #00897b; background: #fff; }
-  input[type="text"] {
-    padding: 12px; font-size: 18px; width: 220px;
-    border-radius: 10px; border: 2px solid #00897b;
-    outline: none; text-align: center;
+  canvas {
+    border: 2px solid #333;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    background: #fafafa;
+  }
+  input, button {
+    padding: 10px;
+    margin: 5px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
   }
   button {
-    padding: 12px 25px; margin: 10px; font-size: 18px;
-    border: none; border-radius: 15px; cursor: pointer;
-    background: #00897b; color: white; font-weight: bold;
-    transition: 0.3s;
+    background: #2196f3;
+    color: white;
+    cursor: pointer;
   }
-  button:hover { background: #4db6ac; }
-  .feedback { font-size: 22px; font-weight: bold; margin-top: 15px; min-height: 30px; }
-  .progress { font-size: 18px; color: #444; margin-top: 10px; }
-  .firework {
-    position: absolute; width: 8px; height: 8px; border-radius: 50%;
-    pointer-events: none; animation: explode 1.2s forwards;
+  button:hover {
+    background: #1976d2;
   }
-  @keyframes explode {
-    0% {transform: scale(1); opacity: 1;}
-    70% {transform: scale(2.5); opacity: 0.9;}
-    100% {transform: scale(4); opacity: 0;}
+  #feedback {
+    font-size: 18px;
+    margin-top: 10px;
+    font-weight: bold;
   }
 </style>
 </head>
 <body>
-
-<h1>🟩 Quadrilateral Area Game</h1>
-
-<div class="tabs">
-  <button class="tab-btn active" onclick="switchMode('all', event)">All</button>
-  <button class="tab-btn" onclick="switchMode('rectangle', event)">Rectangle</button>
-  <button class="tab-btn" onclick="switchMode('square', event)">Square</button>
-  <button class="tab-btn" onclick="switchMode('parallelogram', event)">Parallelogram</button>
-  <button class="tab-btn" onclick="switchMode('rhombus', event)">Rhombus</button>
-  <button class="tab-btn" onclick="switchMode('kite', event)">Kite</button>
-  <button class="tab-btn" onclick="switchMode('trapezium', event)">Trapezium</button>
-  <button class="tab-btn" onclick="restartGame()">Restart 🔄</button>
+<h1>📐 Trigonometry Game</h1>
+<div id="game-container">
+  <canvas id="gameCanvas"></canvas>
+  <div>
+    <label for="answer">Your Answer:</label>
+    <input type="text" id="answer" placeholder="Enter value (e.g., 3/5 or 0.6)">
+    <button id="submitBtn">Submit</button>
+    <button onclick="restartGame()">Restart</button>
+  </div>
+  <div id="feedback"></div>
 </div>
 
-<div class="game-card">
-  <div class="progress" id="progress"></div>
-  <canvas id="shapeCanvas" width="400" height="300"></canvas>
-  <div>
-    <label for="answer">Enter area: </label>
-    <input type="text" id="answer" placeholder="e.g. 24 or base*height">
-  </div>
-  <div>
-    <button onclick="checkAnswer()">Submit ✅</button>
-  </div>
-  <div id="feedback" class="feedback"></div>
-</div>
-
-<audio id="applause" src="https://www.soundjay.com/human/applause-8.mp3"></audio>
+<audio id="applause" src="https://www.soundjay.com/human/applause-01.mp3" preload="auto"></audio>
 
 <script>
-const shapes = {
-  rectangle: Array.from({length:10},()=>({w:rand(4,12), h:rand(4,10)})),
-  square: Array.from({length:10},()=>({a:rand(4,12)})),
-  parallelogram: Array.from({length:10},()=>({b:rand(5,12), h:rand(4,10)})),
-  rhombus: Array.from({length:10},()=>({d1:rand(5,12), d2:rand(4,10)})),
-  kite: Array.from({length:10},()=>({d1:rand(5,12), d2:rand(4,10)})),
-  trapezium: Array.from({length:10},()=>({a:rand(4,10), b:rand(5,12), h:rand(4,8)}))
-};
+const container = document.getElementById("game-container");
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = container.clientWidth - 40;
+canvas.height = 300;
 
-function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+let correctAnswer = 0;
+let question = "";
+let particles = [];
 
-let mode='all', filtered=[], currentIndex=0;
+// Draw random triangle and set question
+function drawTriangle() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-function switchMode(selected, ev){
-  mode=selected;
-  document.querySelectorAll('.tab-btn').forEach(btn=>btn.classList.remove('active'));
-  ev.target.classList.add('active');
-  filtered=(mode==='all')?Object.values(shapes).flat():shapes[mode];
-  shuffle(filtered);
-  currentIndex=0;
-  loadShape();
-}
+  let opposite = Math.floor(Math.random() * 6) + 3;
+  let adjacent = Math.floor(Math.random() * 6) + 4;
+  let hypotenuse = Math.sqrt(opposite**2 + adjacent**2);
 
-function shuffle(arr){
-  for(let i=arr.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]]=[arr[j],arr[i]];
-  }
-}
+  const ratios = ["sin", "cos", "tan"];
+  const chosen = ratios[Math.floor(Math.random() * ratios.length)];
 
-function drawShape(shape, type){
-  const ctx=document.getElementById("shapeCanvas").getContext("2d");
-  ctx.clearRect(0,0,400,300);
-  ctx.strokeStyle="#333"; ctx.lineWidth=2; ctx.font="16px Arial"; ctx.fillStyle="#000";
+  const x = 100, y = 250;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + adjacent*20, y);
+  ctx.lineTo(x, y - opposite*20);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.fillStyle = "#bbdefb";
+  ctx.fill();
 
-  if(type==="rectangle"){
-    ctx.strokeRect(100,100,shape.w*15,shape.h*15);
-    ctx.fillText(`w=${shape.w}`,150,95);
+  ctx.beginPath();
+  ctx.rect(x, y-20, 20, 20);
+  ctx.stroke();
 
-    // height dotted line
-    ctx.setLineDash([5,5]);
-    ctx.beginPath();
-    ctx.moveTo(100,100);
-    ctx.lineTo(100,100+shape.h*15);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillText(`h=${shape.h}`,80,100+shape.h*7.5);
-  }
+  ctx.fillStyle = "black";
+  ctx.font = "14px Arial";
+  ctx.fillText(`Opposite = ${opposite}`, x-70, y - opposite*10);
+  ctx.fillText(`Adjacent = ${adjacent}`, x+adjacent*10, y+15);
+  ctx.fillText(`Hypotenuse = ${hypotenuse.toFixed(2)}`, x+adjacent*10, y - opposite*10);
 
-  else if(type==="square"){
-    ctx.strokeRect(120,100,shape.a*15,shape.a*15);
-    ctx.fillText(`a=${shape.a}`,120+shape.a*7,95);
-
-    // height dotted line
-    ctx.setLineDash([5,5]);
-    ctx.beginPath();
-    ctx.moveTo(120,100);
-    ctx.lineTo(120,100+shape.a*15);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillText(`h=${shape.a}`,100,100+shape.a*7.5);
-  }
-
-  else if(type==="parallelogram"){
-    ctx.beginPath();
-    ctx.moveTo(100,200);
-    ctx.lineTo(100+shape.b*15,200);
-    ctx.lineTo(100+shape.b*15-40,200-shape.h*15);
-    ctx.lineTo(60,200-shape.h*15);
-    ctx.closePath(); ctx.stroke();
-    ctx.fillText(`b=${shape.b}`,140,215);
-
-    // height dotted line
-    ctx.setLineDash([5,5]);
-    ctx.beginPath();
-    ctx.moveTo(60,200-shape.h*15);
-    ctx.lineTo(60,200);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillText(`h=${shape.h}`,65,200-shape.h*7);
-  }
-
-  else if(type==="rhombus" || type==="kite"){
-    ctx.beginPath();
-    ctx.moveTo(200,150-shape.d2*7.5);
-    ctx.lineTo(200+shape.d1*7.5,150);
-    ctx.lineTo(200,150+shape.d2*7.5);
-    ctx.lineTo(200-shape.d1*7.5,150);
-    ctx.closePath(); ctx.stroke();
-    ctx.fillText(`d1=${shape.d1}`,200+5,145);
-    ctx.fillText(`d2=${shape.d2}`,205,150-shape.d2*4);
-
-    // vertical height line (d2)
-    ctx.setLineDash([5,5]);
-    ctx.beginPath();
-    ctx.moveTo(200,150-shape.d2*7.5);
-    ctx.lineTo(200,150+shape.d2*7.5);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillText(`h=${shape.d2}`,210,150);
-  }
-
-  else if(type==="trapezium"){
-    ctx.beginPath();
-    ctx.moveTo(100,200);
-    ctx.lineTo(100+shape.b*15,200);
-    ctx.lineTo(100+shape.a*15+20,200-shape.h*15);
-    ctx.lineTo(80,200-shape.h*15);
-    ctx.closePath(); ctx.stroke();
-    ctx.fillText(`a=${shape.a}`,110,200-shape.h*15-5);
-    ctx.fillText(`b=${shape.b}`,140,215);
-
-    // height dotted line
-    ctx.setLineDash([5,5]);
-    ctx.beginPath();
-    ctx.moveTo(100,200);
-    ctx.lineTo(100,200-shape.h*15);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillText(`h=${shape.h}`,80,200-shape.h*7);
-  }
-}
-
-function loadShape(){
-  const shape=filtered[currentIndex];
-  drawShape(shape, mode==="all"?detectType(shape):mode);
-  document.getElementById('answer').value='';
-  document.getElementById('feedback').textContent='';
-  document.getElementById('progress').textContent=`Question ${currentIndex+1} of ${filtered.length}`;
-}
-
-function detectType(shape){
-  for(const t in shapes){ if(shapes[t].includes(shape)) return t; }
-  return "rectangle";
-}
-
-function calcArea(shape,type){
-  switch(type){
-    case "rectangle": return shape.w*shape.h;
-    case "square": return shape.a*shape.a;
-    case "parallelogram": return shape.b*shape.h;
-    case "rhombus": return (shape.d1*shape.d2)/2;
-    case "kite": return (shape.d1*shape.d2)/2;
-    case "trapezium": return (shape.a+shape.b)/2*shape.h;
-  }
-}
-
-function checkAnswer(){
-  const shape=filtered[currentIndex];
-  const type=mode==="all"?detectType(shape):mode;
-  const userInput=document.getElementById('answer').value.trim();
-  const feedback=document.getElementById('feedback');
-  const correctValue=calcArea(shape,type);
-
-  let userValue;
-  try{ userValue=eval(userInput);}catch{ userValue=NaN;}
-
-  if(Math.abs(userValue-correctValue)<0.1){
-    feedback.textContent='🎉 Correct!';
-    feedback.style.color='green';
-    showFireworks();
-    document.getElementById("applause").play();
-    setTimeout(()=>{
-      currentIndex++;
-      if(currentIndex>=filtered.length){
-        feedback.textContent='🏆 Well done! You finished this set!';
-        shuffle(filtered); currentIndex=0;
-        setTimeout(loadShape,2000);
-      } else loadShape();
-    },1500);
+  if (chosen === "sin") {
+    question = `🎯 Find sin(θ) where θ is the base angle.`;
+    correctAnswer = (opposite / hypotenuse);
+  } else if (chosen === "cos") {
+    question = `🎯 Find cos(θ) where θ is the base angle.`;
+    correctAnswer = (adjacent / hypotenuse);
   } else {
-    feedback.textContent='❌ Try again!';
-    feedback.style.color='red';
+    question = `🎯 Find tan(θ) where θ is the base angle.`;
+    correctAnswer = (opposite / adjacent);
+  }
+
+  const feedback = document.getElementById("feedback");
+  feedback.style.color = "black";
+  feedback.textContent = question;
+}
+
+// Check user's answer
+function checkAnswer() {
+  let input = document.getElementById("answer").value.trim();
+  let userAnswer;
+
+  try {
+    if (input.includes("/")) {
+      const parts = input.split("/");
+      userAnswer = parseFloat(parts[0]) / parseFloat(parts[1]);
+    } else {
+      userAnswer = parseFloat(eval(input));
+    }
+  } catch {
+    userAnswer = NaN;
+  }
+
+  const feedback = document.getElementById("feedback");
+  if (!isNaN(userAnswer)) {
+    userAnswer = Number(userAnswer.toFixed(2));
+    const expected = Number(correctAnswer.toFixed(2));
+
+    if (userAnswer === expected) {
+      const messages = ["✅ Correct! Brilliant job! 🎉", "🌟 Excellent! Keep it up!", "👏 Perfect! You nailed it!"];
+      feedback.style.color = "green";
+      feedback.textContent = messages[Math.floor(Math.random() * messages.length)];
+      playApplause();
+      launchFireworks();
+      setTimeout(restartGame, 3000);
+    } else {
+      feedback.style.color = "red";
+      feedback.textContent = `❌ Oops! Correct Answer = ${expected}`;
+    }
+  } else {
+    feedback.style.color = "red";
+    feedback.textContent = "⚠️ Invalid input. Try again!";
   }
 }
 
-function restartGame(){ shuffle(filtered); currentIndex=0; loadShape(); }
-
-function showFireworks(){
-  for(let i=0;i<15;i++){
-    const fw=document.createElement('div');
-    fw.className='firework';
-    fw.style.left=(100+Math.random()*200)+'px';
-    fw.style.top=(50+Math.random()*150)+'px';
-    fw.style.background=`hsl(${Math.random()*360},100%,50%)`;
-    document.querySelector('.game-card').appendChild(fw);
-    setTimeout(()=>fw.remove(),1200);
-  }
+// Restart game
+function restartGame() {
+  document.getElementById("answer").value = "";
+  particles = [];
+  drawTriangle();
 }
 
-// Enable Enter key
-document.getElementById("answer").addEventListener("keypress", function(e){
-  if(e.key === "Enter"){ checkAnswer(); }
+// Applause sound
+function playApplause() {
+  const applause = document.getElementById("applause");
+  applause.currentTime = 0;
+  applause.play();
+}
+
+// Fireworks effect
+function launchFireworks() {
+  particles = [];
+  for (let i = 0; i < 80; i++) {
+    particles.push({
+      x: canvas.width/2,
+      y: canvas.height/2,
+      angle: Math.random() * 2 * Math.PI,
+      speed: Math.random() * 4 + 2,
+      radius: Math.random() * 3 + 2,
+      life: 100
+    });
+  }
+  animateFireworks();
+}
+
+function animateFireworks() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawTriangle();
+  particles.forEach(p => {
+    let dx = Math.cos(p.angle) * p.speed;
+    let dy = Math.sin(p.angle) * p.speed;
+    p.x += dx;
+    p.y += dy;
+    p.life -= 2;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},${p.life/100})`;
+    ctx.fill();
+  });
+  particles = particles.filter(p => p.life > 0);
+  if (particles.length > 0) requestAnimationFrame(animateFireworks);
+}
+
+// Submit on Enter key
+document.getElementById("answer").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") checkAnswer();
 });
 
-// init
-switchMode('all',{target:document.querySelector('.tab-btn')});
+// Submit button click
+document.getElementById("submitBtn").addEventListener("click", checkAnswer);
+
+drawTriangle();
 </script>
 </body>
 </html>
+
