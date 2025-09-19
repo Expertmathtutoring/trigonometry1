@@ -14,47 +14,57 @@
   h1 {
     background: #2196f3;
     color: white;
-    padding: 15px;
+    padding: 14px;
     margin: 0;
+    font-size: 24px;
   }
   #game-container {
-    margin: 20px auto;
+    margin: 15px auto;
     width: 95%;
-    max-width: 900px;
+    max-width: 950px;
     background: white;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    gap: 15px;
   }
   #left-side {
     flex: 2;
   }
   #hints {
-    flex: 1;
-    margin-left: 15px;
     background: #e3f2fd;
-    padding: 15px;
-    border-radius: 12px;
-    border: 2px solid #90caf9;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #90caf9;
     text-align: left;
+    font-size: 14px;
+    line-height: 1.5;
+    display: none;
+    flex: 0 0 auto;
+    max-width: 220px;
+  }
+  #hints h3 {
     font-size: 15px;
-    display: none; /* hidden by default */
+    margin: 0 0 8px 0;
+    text-align: center;
   }
   canvas {
-    border: 2px solid #333;
-    border-radius: 10px;
-    margin-bottom: 15px;
+    border: 1px solid #333;
+    border-radius: 8px;
     background: #fafafa;
     width: 100%;
+    max-width: 550px;
+    height: 320px;
+    margin-bottom: 10px;
   }
   input, button {
-    padding: 10px;
-    margin: 5px;
-    font-size: 16px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 4px;
+    font-size: 15px;
+    border-radius: 6px;
     border: 1px solid #ccc;
   }
   button {
@@ -66,9 +76,23 @@
     background: #1976d2;
   }
   #feedback {
-    font-size: 18px;
-    margin-top: 10px;
+    font-size: 16px;
+    margin-top: 8px;
     font-weight: bold;
+  }
+
+  /* 📱 Responsive for phones */
+  @media (max-width: 700px) {
+    #game-container {
+      flex-direction: column;
+      align-items: center;
+    }
+    #hints {
+      width: 100%;
+      max-width: 340px;
+      margin-top: 10px;
+      text-align: center;
+    }
   }
 </style>
 </head>
@@ -78,59 +102,54 @@
   <div id="left-side">
     <canvas id="gameCanvas"></canvas>
     <div>
-      <label for="answer">Your Answer:</label>
-      <input type="text" id="answer" placeholder="Enter value (e.g., 3/5 or 0.6)">
-      <button id="submitBtn">Submit</button>
-      <button onclick="restartGame()">Restart</button>
-      <button onclick="toggleHints()">Show Hints</button>
+      <label for="answer">Answer:</label>
+      <input type="text" id="answer" placeholder="e.g., 3/5 or 0.6">
+      <button id="submitBtn">✔ Submit</button>
+      <button onclick="restartGame()">⟳ Restart</button>
+      <button onclick="toggleHints()">💡 Hints</button>
     </div>
     <div id="feedback"></div>
   </div>
 
-  <!-- Trig ratio hints -->
+  <!-- Hints -->
   <div id="hints">
-    <h3>📝 Trig Ratio Hints</h3>
-    <p><b>sin(θ)</b> = Opposite / Hypotenuse</p>
-    <p><b>cos(θ)</b> = Adjacent / Hypotenuse</p>
-    <p><b>tan(θ)</b> = Opposite / Adjacent</p>
+    <h3>📝 Hints</h3>
+    <p><b>sin(θ)</b> = Opp / Hyp</p>
+    <p><b>cos(θ)</b> = Adj / Hyp</p>
+    <p><b>tan(θ)</b> = Opp / Adj</p>
   </div>
 </div>
 
 <audio id="applause" src="https://www.soundjay.com/human/applause-01.mp3" preload="auto"></audio>
 
 <script>
-const container = document.getElementById("game-container");
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-canvas.width = container.clientWidth * 0.55 - 40; 
-canvas.height = 300;
+canvas.width = 550;
+canvas.height = 320;
 
 let correctAnswer = 0;
 let question = "";
 let particles = [];
 
-// Toggle hint visibility
+// Toggle hints
 function toggleHints() {
   const hints = document.getElementById("hints");
-  if (hints.style.display === "none") {
-    hints.style.display = "block";
-  } else {
-    hints.style.display = "none";
-  }
+  hints.style.display = (hints.style.display === "block") ? "none" : "block";
 }
 
-// Draw random triangle and set question
+// Draw triangle
 function drawTriangle() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  let opposite = Math.floor(Math.random() * 6) + 3;
-  let adjacent = Math.floor(Math.random() * 6) + 4;
+  let opposite = Math.floor(Math.random() * 5) + 3;
+  let adjacent = Math.floor(Math.random() * 5) + 3;
   let hypotenuse = Math.sqrt(opposite**2 + adjacent**2);
 
   const ratios = ["sin", "cos", "tan"];
   const chosen = ratios[Math.floor(Math.random() * ratios.length)];
 
-  const x = 80, y = 250;
+  const x = 90, y = 280;
   ctx.beginPath();
   ctx.moveTo(x, y);
   ctx.lineTo(x + adjacent*20, y);
@@ -140,24 +159,26 @@ function drawTriangle() {
   ctx.fillStyle = "#bbdefb";
   ctx.fill();
 
+  // Right angle square
   ctx.beginPath();
-  ctx.rect(x, y-20, 20, 20);
+  ctx.rect(x, y-18, 18, 18);
   ctx.stroke();
 
+  // Labels
   ctx.fillStyle = "black";
-  ctx.font = "14px Arial";
-  ctx.fillText(`Opposite = ${opposite}`, x-70, y - opposite*10);
-  ctx.fillText(`Adjacent = ${adjacent}`, x+adjacent*10, y+15);
-  ctx.fillText(`Hypotenuse = ${hypotenuse.toFixed(2)}`, x+adjacent*10, y - opposite*10);
+  ctx.font = "13px Arial";
+  ctx.fillText(`Opp = ${opposite}`, x-50, y - opposite*10);
+  ctx.fillText(`Adj = ${adjacent}`, x+adjacent*9, y+14);
+  ctx.fillText(`Hyp ≈ ${hypotenuse.toFixed(2)}`, x+adjacent*9, y - opposite*9);
 
   if (chosen === "sin") {
-    question = `🎯 Find sin(θ) where θ is the base angle.`;
+    question = `🎯 Find sin(θ)`;
     correctAnswer = (opposite / hypotenuse);
   } else if (chosen === "cos") {
-    question = `🎯 Find cos(θ) where θ is the base angle.`;
+    question = `🎯 Find cos(θ)`;
     correctAnswer = (adjacent / hypotenuse);
   } else {
-    question = `🎯 Find tan(θ) where θ is the base angle.`;
+    question = `🎯 Find tan(θ)`;
     correctAnswer = (opposite / adjacent);
   }
 
@@ -166,7 +187,7 @@ function drawTriangle() {
   feedback.textContent = question;
 }
 
-// Check user's answer
+// Check answer
 function checkAnswer() {
   let input = document.getElementById("answer").value.trim();
   let userAnswer;
@@ -188,19 +209,18 @@ function checkAnswer() {
     const expected = Number(correctAnswer.toFixed(2));
 
     if (userAnswer === expected) {
-      const messages = ["✅ Correct! Brilliant job! 🎉", "🌟 Excellent! Keep it up!", "👏 Perfect! You nailed it!"];
       feedback.style.color = "green";
-      feedback.textContent = messages[Math.floor(Math.random() * messages.length)];
+      feedback.textContent = "✅ Correct!";
       playApplause();
       launchFireworks();
       setTimeout(restartGame, 3000);
     } else {
       feedback.style.color = "red";
-      feedback.textContent = `❌ Oops! Correct Answer = ${expected}`;
+      feedback.textContent = `❌ Correct = ${expected}`;
     }
   } else {
     feedback.style.color = "red";
-    feedback.textContent = "⚠️ Invalid input. Try again!";
+    feedback.textContent = "⚠️ Invalid input";
   }
 }
 
@@ -211,14 +231,14 @@ function restartGame() {
   drawTriangle();
 }
 
-// Applause sound
+// Applause
 function playApplause() {
   const applause = document.getElementById("applause");
   applause.currentTime = 0;
   applause.play();
 }
 
-// Fireworks effect
+// Fireworks
 function launchFireworks() {
   particles = [];
   for (let i = 0; i < 80; i++) {
@@ -226,7 +246,7 @@ function launchFireworks() {
       x: canvas.width/2,
       y: canvas.height/2,
       angle: Math.random() * 2 * Math.PI,
-      speed: Math.random() * 4 + 2,
+      speed: Math.random() * 5 + 2,
       radius: Math.random() * 3 + 2,
       life: 100
     });
@@ -252,17 +272,16 @@ function animateFireworks() {
   if (particles.length > 0) requestAnimationFrame(animateFireworks);
 }
 
-// Submit on Enter key
+// Submit on Enter
 document.getElementById("answer").addEventListener("keypress", function(e) {
   if (e.key === "Enter") checkAnswer();
 });
-
-// Submit button click
 document.getElementById("submitBtn").addEventListener("click", checkAnswer);
 
 drawTriangle();
 </script>
 </body>
 </html>
+
 
 
