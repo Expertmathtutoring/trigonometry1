@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -19,20 +19,36 @@
   }
   #game-container {
     margin: 20px auto;
-    width: 90%;
-    max-width: 650px;
+    width: 95%;
+    max-width: 900px;
     background: white;
     padding: 20px;
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    position: relative;
-    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  #left-side {
+    flex: 2;
+  }
+  #hints {
+    flex: 1;
+    margin-left: 15px;
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 12px;
+    border: 2px solid #90caf9;
+    text-align: left;
+    font-size: 15px;
+    display: none; /* hidden by default */
   }
   canvas {
     border: 2px solid #333;
     border-radius: 10px;
     margin-bottom: 15px;
     background: #fafafa;
+    width: 100%;
   }
   input, button {
     padding: 10px;
@@ -59,14 +75,25 @@
 <body>
 <h1>📐 Trigonometry Game</h1>
 <div id="game-container">
-  <canvas id="gameCanvas"></canvas>
-  <div>
-    <label for="answer">Your Answer:</label>
-    <input type="text" id="answer" placeholder="Enter value (e.g., 3/5 or 0.6)">
-    <button id="submitBtn">Submit</button>
-    <button onclick="restartGame()">Restart</button>
+  <div id="left-side">
+    <canvas id="gameCanvas"></canvas>
+    <div>
+      <label for="answer">Your Answer:</label>
+      <input type="text" id="answer" placeholder="Enter value (e.g., 3/5 or 0.6)">
+      <button id="submitBtn">Submit</button>
+      <button onclick="restartGame()">Restart</button>
+      <button onclick="toggleHints()">Show Hints</button>
+    </div>
+    <div id="feedback"></div>
   </div>
-  <div id="feedback"></div>
+
+  <!-- Trig ratio hints -->
+  <div id="hints">
+    <h3>📝 Trig Ratio Hints</h3>
+    <p><b>sin(θ)</b> = Opposite / Hypotenuse</p>
+    <p><b>cos(θ)</b> = Adjacent / Hypotenuse</p>
+    <p><b>tan(θ)</b> = Opposite / Adjacent</p>
+  </div>
 </div>
 
 <audio id="applause" src="https://www.soundjay.com/human/applause-01.mp3" preload="auto"></audio>
@@ -75,12 +102,22 @@
 const container = document.getElementById("game-container");
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-canvas.width = container.clientWidth - 40;
+canvas.width = container.clientWidth * 0.55 - 40; 
 canvas.height = 300;
 
 let correctAnswer = 0;
 let question = "";
 let particles = [];
+
+// Toggle hint visibility
+function toggleHints() {
+  const hints = document.getElementById("hints");
+  if (hints.style.display === "none") {
+    hints.style.display = "block";
+  } else {
+    hints.style.display = "none";
+  }
+}
 
 // Draw random triangle and set question
 function drawTriangle() {
@@ -93,7 +130,7 @@ function drawTriangle() {
   const ratios = ["sin", "cos", "tan"];
   const chosen = ratios[Math.floor(Math.random() * ratios.length)];
 
-  const x = 100, y = 250;
+  const x = 80, y = 250;
   ctx.beginPath();
   ctx.moveTo(x, y);
   ctx.lineTo(x + adjacent*20, y);
@@ -227,4 +264,5 @@ drawTriangle();
 </script>
 </body>
 </html>
+
 
